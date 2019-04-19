@@ -18,22 +18,36 @@ app.post("/", (req, res) => {
   const messageSent = req.body.message.text;
 
   if (messageSent.match(/hello/gi)) {
-    postMessage(chatID, "hello back 👋!");
+    postMessage(chatID, "hello back 👋!")
+      .then(response => {
+        res.status(200).send(response);
+      })
+      .catch(error => {
+        res.status(200).send("ups!.");
+      });
   } else if (messageSent.match(/weather in ([a-zA-Z\s]+)/gi)) {
-    getWeather(chatID, messageSent);
+    getWeather(chatID, messageSent)
+      .then(response => {
+        res.status(200).send(response);
+      })
+      .catch(error => {
+        res.status(200).send("ups!.");
+      });
   } else {
     res.status(200).send({});
   }
 });
 
 async function getWeather(chatID, messageSent) {
-  // const city = "Buenos Aires";
   const regexCity = /weather in ([a-zA-Z\s]+)/gi;
   let cityMatched = regexCity.exec(messageSent);
   let city = cityMatched && cityMatched.length > 1 ? cityMatched[1] : undefined;
-  let response = await weatherApiCall(city);
-  let weatherDescription = response.data.weather[0].description;
-  return postMessage(chatID, weatherDescription);
+  if (city) {
+    let response = await weatherApiCall(city);
+    let weatherDescription = response.data.weather[0].description;
+    return postMessage(chatID, weatherDescription);
+  }
+  return;
 }
 
 weatherApiCall = city => {
